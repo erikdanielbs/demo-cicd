@@ -1,47 +1,28 @@
-name: Tests
+name: Pruebas automáticas
 
 on:
   push:
-    branches:
-      - master
-      - '*.x'
+    branches: [ main ]
   pull_request:
-  schedule:
-    - cron: '0 0 * * *'
-
-permissions:
-  contents: read
+    branches: [ main ]
 
 jobs:
   tests:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: true
-      matrix:
-        php: [8.2, 8.3, 8.4]
-
-    name: PHP ${{ matrix.php }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
-          coverage: none
+          php-version: '8.3'
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist
 
-      - name: Copy environment file
-        run: cp .env.example .env
+      - name: Preparar entorno
+        run: |
+          cp .env.example .env
+          php artisan key:generate
 
-      - name: Generate app key
-        run: php artisan key:generate
-
-      - name: Execute tests
+      - name: Ejecutar pruebas
         run: php artisan test
